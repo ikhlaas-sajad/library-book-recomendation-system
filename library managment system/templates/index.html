@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Browse — NextChapter{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <h1>Find Your Next<br><em>Great Read</em></h1>
+  <p>· smart recommendations ·</p>
+  <form action="{{ url_for('index') }}" method="get" class="hero-search">
+    <input name="q" placeholder="Search by title, author, or genre…" value="{{ q }}">
+    <button type="submit">Search</button>
+  </form>
+</section>
+
+<section class="section recommend">
+  <div class="bar recommend-bar">
+    <div>
+      <h2>Discover your next perfect read</h2>
+      <p class="recommend-copy">Choose your mood, goal, and preferred pace, and we’ll recommend the book that feels made for you.</p>
+    </div>
+    <div class="recommend-badge">Personalized picks</div>
+  </div>
+  <form action="{{ url_for('recommend') }}" method="get" class="recommend-form">
+    <div class="recommend-grid">
+      <select name="genre">
+        <option value="">Genre</option>
+        {% for genre in genres %}
+        <option value="{{ genre }}" {% if genre == selected_genre %}selected{% endif %}>{{ genre }}</option>
+        {% endfor %}
+      </select>
+      <select name="language">
+        <option value="">Language</option>
+        {% for language in languages %}
+        <option value="{{ language }}" {% if language == selected_language %}selected{% endif %}>{{ language }}</option>
+        {% endfor %}
+      </select>
+      <select name="purpose">
+        <option value="">Why are you reading?</option>
+        {% for purpose in ["Learning", "Entertainment", "Motivation", "Career growth"] %}
+        <option value="{{ purpose }}" {% if purpose == selected_purpose %}selected{% endif %}>{{ purpose }}</option>
+        {% endfor %}
+      </select>
+      <select name="length">
+        <option value="">Preferred book length</option>
+        {% for length in lengths %}
+        <option value="{{ length }}" {% if length == selected_length %}selected{% endif %}>{{ length }}</option>
+        {% endfor %}
+      </select>
+      <select name="mood">
+        <option value="">Mood right now</option>
+        {% for mood in moods %}
+        <option value="{{ mood }}" {% if mood == selected_mood %}selected{% endif %}>{{ mood }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="top-rated-pill recommend-button">Find My Match</button>
+  </form>
+</section>
+
+<section class="section">
+  <div class="bar">
+    <h2>{% if q %}Results for "{{ q }}"{% else %}All Books{% endif %}</h2>
+    <form action="{{ url_for('index') }}" method="get" class="sort-form">
+      {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+      <select name="genre" onchange="this.form.submit()">
+        <option value="" {% if not selected_genre %}selected{% endif %}>All Genres</option>
+        {% for genre in genres %}
+        <option value="{{ genre }}" {% if genre==selected_genre %}selected{% endif %}>{{ genre }}</option>
+        {% endfor %}
+      </select>
+      <select name="author" onchange="this.form.submit()">
+        <option value="" {% if not selected_author %}selected{% endif %}>All Authors</option>
+        {% for author in authors %}
+        <option value="{{ author }}" {% if author==selected_author %}selected{% endif %}>{{ author }}</option>
+        {% endfor %}
+      </select>
+      <select name="sort" onchange="this.form.submit()">
+        <option value="rating" {% if sort=='rating' %}selected{% endif %}>Rating</option>
+        <option value="year"   {% if sort=='year'   %}selected{% endif %}>Newest</option>
+        <option value="title"  {% if sort=='title'  %}selected{% endif %}>A–Z</option>
+      </select>
+    </form>
+  </div>
+  <div class="genre-filters">
+    <a href="{{ url_for('index', q=q, sort=sort, author=selected_author) }}" class="genre-pill {% if not selected_genre %}active{% endif %}">All</a>
+    {% for genre in genres %}
+    <a href="{{ url_for('index', q=q, sort=sort, genre=genre, author=selected_author) }}" class="genre-pill {% if genre==selected_genre %}active{% endif %}">{{ genre }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="grid">
+    {% for b in books %}
+    <a href="{{ url_for('detail', bid=b.id) }}" class="card">
+      {% if b.image_url %}
+      <div class="cover cover-img">
+        <img src="{{ b.image_url }}" alt="{{ b.title }} cover" loading="lazy">
+      </div>
+      {% else %}
+      <div class="cover" style="--h:{{ (b.id*47)%360 }}deg">
+        <span>{{ b.title[0] }}</span>
+        <small>{{ b.genre }}</small>
+      </div>
+      {% endif %}
+      <div class="info">
+        <p class="title">{{ b.title }}</p>
+        <p class="author">{{ b.author }}</p>
+        <p class="meta">★ {{ b.rating }} &nbsp;·&nbsp; {{ b.year }} &nbsp;·&nbsp; {{ b.pages }}p</p>
+        <p class="desc">{{ b.description[:80] }}…</p>
+      </div>
+    </a>
+    {% else %}
+    <p class="empty">No books found.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
